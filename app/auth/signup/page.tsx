@@ -18,10 +18,11 @@ import { BsGithub } from "react-icons/bs";
 import { PiEyeClosedBold, PiEyeBold } from "react-icons/pi";
 import { AiOutlineCheck } from "react-icons/ai";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, http } from "@/lib/utils";
 import useCountDown from "@/hook/useCountDown";
-import { trpc } from "@/app/_trpc/client";
 import { SignupType, signupSchema } from "@/constants/schema";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError, isAxiosError } from "axios";
 
 const SignupPage = () => {
   const [isHiddenPassword, setIsHiddenPassword] = React.useState<boolean>(true);
@@ -50,7 +51,23 @@ const SignupPage = () => {
     [form]
   );
 
-  const otpMutation = trpc.otps.create.useMutation({
+  const [isExistEmail, setisExistEmail] = useState(false);
+
+  useEffect(() => {
+    setisExistEmail(false);
+  }, [form.email]);
+
+  const otpMutation = useMutation({
+    mutationFn: async () =>
+      await http.post("/otp/send", {
+        email: "gaconght001@gmail.com",
+        type: "SIGNINUP",
+      }),
+    onError: (error, variables, ctx) => {
+      if (isAxiosError(error) && error.response?.status == 400) {
+        console.log(error.response?.data.errors[0]);
+      }
+    },
     onSuccess: (data) => {
       if (!data) {
         setisExistEmail(true);
@@ -59,29 +76,10 @@ const SignupPage = () => {
       }
     },
   });
-  const [isExistEmail, setisExistEmail] = useState(false);
-
-  useEffect(() => {
-    setisExistEmail(false);
-  }, [form.email]);
 
   const handleSendEmail = () => {
-    otpMutation.mutate({ email: form.email, type: "SIGNINUP" });
+    otpMutation.mutate();
   };
-
-  const userMutation = trpc.users.create.useMutation({
-    onSuccess: () => {
-      setForm({ email: "", password: "", code: "" });
-    },
-  });
-  useEffect(() => {
-    if (
-      (form.email !== "" || form.password !== "" || form.code !== "") &&
-      userMutation.isSuccess
-    ) {
-      userMutation.reset();
-    }
-  }, [form]);
 
   const handlerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,7 +92,6 @@ const SignupPage = () => {
         "length_error",
       ])
     ) {
-      userMutation.mutate(form);
     }
   };
 
@@ -242,7 +239,7 @@ const SignupPage = () => {
                     <p className="flex items-center justify-center border-l py-[7px] px-3 min-w-[46px] text-center text-muted-foreground text-sm">
                       <span>{count}s</span>
                     </p>
-                  ) : otpMutation.isLoading ? (
+                  ) : otpMutation.isPending ? (
                     <p className="flex items-center justify-center border-l py-[7px] px-3 min-w-[46px] text-center text-muted-foreground text-sm">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       <span>Send</span>
@@ -268,13 +265,13 @@ const SignupPage = () => {
                       Enter the 6-digit code
                     </p>
                   )}
-                {userMutation.isSuccess && (
+                {false && (
                   <p
                     className={`${
-                      userMutation.data ? "text-green-400" : "text-red-500"
+                      false ? "text-green-400" : "text-red-500"
                     } font-medium text-xs `}
                   >
-                    {userMutation.data
+                    {false
                       ? "Successful account registration"
                       : "Email verification code has expired"}
                   </p>
@@ -293,9 +290,7 @@ const SignupPage = () => {
               ])}
               className="w-full"
             >
-              {userMutation.isLoading && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {false && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign Up
             </Button>
             <div className="flex items-center justify-center space-x-1 mt-6">

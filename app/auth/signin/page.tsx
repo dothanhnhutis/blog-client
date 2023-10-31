@@ -38,6 +38,7 @@ const SigninPage = () => {
         ...form,
         redirect: false,
       }).then((res) => {
+        console.log(res);
         if (!res?.error) {
           router.push("/manager");
         } else {

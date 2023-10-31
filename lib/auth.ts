@@ -7,6 +7,7 @@ import { AdapterUser } from "next-auth/adapters";
 import { NextAuthOptions, User, getServerSession } from "next-auth";
 
 import { LoginSubmit, SessionInterface } from "@/common.type";
+import { http } from "./utils";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -15,17 +16,23 @@ export const authOptions: NextAuthOptions = {
       type: "credentials",
       credentials: {},
       async authorize(credentials, req) {
-        // const data = credentials as LoginSubmit;
-        // const user = await prisma.user.findUnique({
-        //   where: { email: data.email },
-        // });
-        // if (
-        //   user &&
-        //   user.password &&
-        //   (await comparePassword(user.password, data.password))
-        // )
-        //   return user;
-        return null;
+        try {
+          const data = credentials as LoginSubmit;
+          const res = await http.post<{
+            message: string;
+            user: {
+              id: string;
+              email: string;
+              role: string;
+              status: string;
+              token: string;
+            };
+          }>("/auth/signin", { email: data.email, password: data.password });
+          console.log(res.data.user);
+          return res.data.user;
+        } catch (error: any) {
+          return null;
+        }
       },
     }),
     GoogleProvider({
@@ -42,7 +49,6 @@ export const authOptions: NextAuthOptions = {
       const encodedToken = jsonwebtoken.sign(
         {
           ...token,
-          iss: "grafbase",
           exp: Math.floor(Date.now() / 1000) + 15 * 24 * 60 * 60,
         },
         secret
@@ -51,12 +57,12 @@ export const authOptions: NextAuthOptions = {
     },
     decode: async ({ secret, token }) => {
       const decodedToken = jsonwebtoken.verify(token!, secret);
-
       return decodedToken as JWT;
     },
   },
   callbacks: {
     async signIn({ user }: { user: AdapterUser | User }) {
+      console.log(user);
       // const userExist = await prisma.user.findUnique({
       //   where: { email: user.email! },
       // });
@@ -74,30 +80,16 @@ export const authOptions: NextAuthOptions = {
       //       },
       //     },
       //   });
-      return true;
+      return user.status;
     },
-    async session({ session }) {
-      return session;
-      // try {
-      //   const user = await prisma.user.findUnique({
-      //     where: { email: session.user?.email!, status: "ACTIVE" },
-      //     include: {
-      //       userPreference: true,
-      //     },
-      //   });
-      //   const newSession = {
-      //     ...session,
-      //     user: {
-      //       ...session.user,
-      //       ...user,
-      //     },
-      //   };
-
-      //   return newSession;
-      // } catch (error: any) {
-      //   console.error("Error retrieving user data: ", error.message);
-      //   return session;
-      // }
+    async session({ session, token, user }) {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          ...user,
+        },
+      };
     },
   },
   pages: {

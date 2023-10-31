@@ -2,13 +2,14 @@ import Logo from "@/components/Logo";
 import SideBar from "@/components/SideBar";
 import { SwitchMode } from "@/components/SwitchMode";
 import UserMenu from "@/components/UserMenu";
-import { getServerAuthSession } from "@/server/auth";
+import { getServerAuthSession } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
 const ManagerLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getServerAuthSession();
+  console.log(session);
   if (!session) {
     return redirect("/auth/signin");
   }

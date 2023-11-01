@@ -38,7 +38,6 @@ const SigninPage = () => {
         ...form,
         redirect: false,
       }).then((res) => {
-        console.log(res);
         if (!res?.error) {
           router.push("/manager");
         } else {
@@ -65,10 +64,18 @@ const SigninPage = () => {
           <CardContent>
             <div className="grid w-full items-center gap-4">
               <div className="grid grid-cols-2 gap-6">
-                <Button variant="outline" onClick={() => signIn("github")}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => signIn("github")}
+                >
                   <BsGithub className="mr-2 h-5 w-5" /> Github
                 </Button>
-                <Button variant="outline" onClick={() => signIn("google")}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => signIn("google")}
+                >
                   <SiGoogle className="mr-2 h-5 w-5" />
                   Google
                 </Button>
@@ -134,7 +141,9 @@ const SigninPage = () => {
           <CardFooter className="block">
             <Button
               type="submit"
-              disabled={form.email === "" || form.password === ""}
+              disabled={
+                form.email === "" || form.password === "" || isLoadingSubmit
+              }
               className="w-full"
             >
               {isLoadingSubmit && (

@@ -65,7 +65,7 @@ const SignupPage = () => {
       }),
     onError: (error, variables, ctx) => {
       if (isAxiosError(error) && error.response?.status == 400) {
-        console.log(error.response?.data.errors[0]);
+        setisExistEmail(true);
       }
     },
     onSuccess: (data) => {
@@ -81,6 +81,22 @@ const SignupPage = () => {
     otpMutation.mutate();
   };
 
+  const userMutation = useMutation({
+    mutationFn: async () => await http.post("/auth/signup", form),
+    onSettled: () => {
+      setForm({ email: "", password: "", code: "" });
+    },
+  });
+
+  useEffect(() => {
+    if (
+      (form.email !== "" || form.password !== "" || form.code !== "") &&
+      ["error", "success"].includes(userMutation.status)
+    ) {
+      userMutation.reset();
+    }
+  }, [form]);
+
   const handlerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (
@@ -92,6 +108,7 @@ const SignupPage = () => {
         "length_error",
       ])
     ) {
+      userMutation.mutate();
     }
   };
 
@@ -247,6 +264,7 @@ const SignupPage = () => {
                   ) : onfocusAt === "email" ||
                     !handleErrorValidateForm(["invaid_email"]) ? (
                     <button
+                      type="button"
                       onClick={handleSendEmail}
                       className="flex items-center justify-center border-l py-[7px] px-3 min-w-[46px] text-center text-muted-foreground text-sm"
                     >
@@ -265,13 +283,13 @@ const SignupPage = () => {
                       Enter the 6-digit code
                     </p>
                   )}
-                {false && (
+                {["error", "success"].includes(userMutation.status) && (
                   <p
                     className={`${
-                      false ? "text-green-400" : "text-red-500"
+                      !userMutation.isError ? "text-green-400" : "text-red-500"
                     } font-medium text-xs `}
                   >
-                    {false
+                    {!userMutation.isError
                       ? "Successful account registration"
                       : "Email verification code has expired"}
                   </p>
@@ -281,16 +299,22 @@ const SignupPage = () => {
           </CardContent>
           <CardFooter className="block">
             <Button
-              disabled={handleErrorValidateForm([
-                "invaid_email",
-                "too_small",
-                "too_big",
-                "format_error",
-                "length_error",
-              ])}
+              disabled={
+                isExistEmail ||
+                userMutation.isPending ||
+                handleErrorValidateForm([
+                  "invaid_email",
+                  "too_small",
+                  "too_big",
+                  "format_error",
+                  "length_error",
+                ])
+              }
               className="w-full"
             >
-              {false && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {userMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Sign Up
             </Button>
             <div className="flex items-center justify-center space-x-1 mt-6">

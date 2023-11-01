@@ -8,6 +8,15 @@ import { NextAuthOptions, User, getServerSession } from "next-auth";
 
 import { LoginSubmit, SessionInterface } from "@/common.type";
 import { http } from "./utils";
+import { isAxiosError } from "axios";
+
+type UserRes = {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  token: string;
+};
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -17,19 +26,13 @@ export const authOptions: NextAuthOptions = {
       credentials: {},
       async authorize(credentials, req) {
         try {
-          const data = credentials as LoginSubmit;
-          const res = await http.post<{
+          const { email, password } = credentials as LoginSubmit;
+          const { data } = await http.post<{
             message: string;
-            user: {
-              id: string;
-              email: string;
-              role: string;
-              status: string;
-              token: string;
-            };
-          }>("/auth/signin", { email: data.email, password: data.password });
-          console.log(res.data.user);
-          return res.data.user;
+            user: UserRes;
+          }>("/auth/signin", { email, password });
+
+          return data.user;
         } catch (error: any) {
           return null;
         }
@@ -61,8 +64,19 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user }: { user: AdapterUser | User }) {
-      console.log(user);
+    async signIn({ user, account, profile }) {
+      console.log(profile);
+
+      // if (!account || !account.provider) return false;
+      // if (account.provider === "google") {
+      //   return true;
+      // } else if (account.provider === "github") {
+      //   return true;
+      // } else if (account.provider === "credentials") {
+      //   const credentialUser = user as UserRes;
+      //   return credentialUser.status === "ACTIVE";
+      // }
+      // return user?.status ?? false;
       // const userExist = await prisma.user.findUnique({
       //   where: { email: user.email! },
       // });
@@ -80,21 +94,30 @@ export const authOptions: NextAuthOptions = {
       //       },
       //     },
       //   });
-      return user.status;
+      return true;
+    },
+    async jwt({ token, user, account, profile }) {
+      return {
+        ...token,
+        ...user,
+      };
     },
     async session({ session, token, user }) {
-      return {
+      const newSession = {
         ...session,
         user: {
           ...session.user,
           ...user,
+          ...token,
         },
       };
+      return newSession;
     },
   },
   pages: {
     signIn: "/auth/signin",
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export async function getServerAuthSession() {

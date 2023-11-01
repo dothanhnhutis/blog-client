@@ -52,24 +52,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import slug from "slugify";
-import { trpc } from "@/app/_trpc/client";
-import { UseTRPCQueryResult } from "@trpc/react-query/shared";
-import { inferProcedureOutput } from "@trpc/server";
-import { RouterOutputs } from "@/server/shared";
-import { TRPCClientErrorLike } from "@trpc/client";
-import { AppRouter } from "@/server/root";
-
-export type TagTRPCQueryResult = UseTRPCQueryResult<
-  inferProcedureOutput<RouterOutputs["tags"]["getAll"]>,
-  TRPCClientErrorLike<AppRouter>
->;
 
 const TagModel = ({
-  tagQuery,
   type,
   children,
 }: {
-  tagQuery: TagTRPCQueryResult;
   type: "create" | "edit";
   children?: React.ReactNode;
 }) => {
@@ -91,26 +78,26 @@ const TagModel = ({
     }));
   }, [form.name]);
 
-  const tagCreateMutation = trpc.tags.create.useMutation({
-    onError(error, variables, context) {},
-    onSuccess: (data) => {
-      tagQuery.refetch();
-      if (data) {
-        setOpen(false);
-        setForm({
-          name: "",
-          slug: "",
-        });
-      }
-    },
-  });
+  // const tagCreateMutation = trpc.tags.create.useMutation({
+  //   onError(error, variables, context) {},
+  //   onSuccess: (data) => {
+  //     tagQuery.refetch();
+  //     if (data) {
+  //       setOpen(false);
+  //       setForm({
+  //         name: "",
+  //         slug: "",
+  //       });
+  //     }
+  //   },
+  // });
 
   const handleOnchange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleCreateTag = () => {
-    tagCreateMutation.mutate(form);
+    // tagCreateMutation.mutate(form);
   };
 
   return (
@@ -180,18 +167,18 @@ const TagModel = ({
 };
 
 const TagsPage = () => {
-  const tagQuery = trpc.tags.getAll.useQuery();
+  // const tagQuery = trpc.tags.getAll.useQuery();
 
-  const [slugError, setSlugError] = useState<boolean>(false);
+  // const [slugError, setSlugError] = useState<boolean>(false);
 
-  const tagDeleteMutation = trpc.tags.delete.useMutation({
-    onError(error, variables, context) {
-      console.log(error.message);
-    },
-    onSuccess: (data) => {
-      tagQuery.refetch();
-    },
-  });
+  // const tagDeleteMutation = trpc.tags.delete.useMutation({
+  //   onError(error, variables, context) {
+  //     console.log(error.message);
+  //   },
+  //   onSuccess: (data) => {
+  //     tagQuery.refetch();
+  //   },
+  // });
 
   return (
     <>
@@ -214,7 +201,7 @@ const TagsPage = () => {
               className="max-w-[400px]"
               placeholder="Filter tag name..."
             />
-            <TagModel tagQuery={tagQuery} type="create">
+            <TagModel type="create">
               <Button type="button" variant="secondary">
                 +
               </Button>
@@ -234,13 +221,13 @@ const TagsPage = () => {
               </TableHeader>
 
               <TableBody>
-                {tagQuery.data ? (
-                  tagQuery.data.map((tag) => (
+                {false ? (
+                  [].map((tag) => (
                     <TableRow>
-                      <TableCell>{tag.id}</TableCell>
-                      <TableCell>{tag.name}</TableCell>
-                      <TableCell>{tag.slug}</TableCell>
-                      <TableCell>{tag._count.post}</TableCell>
+                      <TableCell>id</TableCell>
+                      <TableCell>name</TableCell>
+                      <TableCell>slug</TableCell>
+                      <TableCell>_countpost</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -260,20 +247,20 @@ const TagsPage = () => {
                             <DropdownMenuGroup>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => {
-                                  setForm({
-                                    name: tag.name,
-                                    slug: tag.slug,
-                                  });
-                                  setOpen(true);
-                                }}
+                              // onClick={() => {
+                              //   setForm({
+                              //     name: tag.name,
+                              //     slug: tag.slug,
+                              //   });
+                              //   setOpen(true);
+                              // }}
                               >
                                 <EditIcon className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
-                                  tagDeleteMutation.mutate({ id: tag.id });
+                                  // tagDeleteMutation.mutate({ id: tag.id });
                                 }}
                                 className="text-red-600"
                               >

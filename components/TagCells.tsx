@@ -16,14 +16,6 @@ import { SessionInterface } from "@/common.type";
 import { TableCell, TableRow } from "./ui/table";
 import { Button } from "./ui/button";
 import TagForm from "./TagForm";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
 
 const TagCells = ({ session }: { session: SessionInterface }) => {
   const queryClient = useQueryClient();
@@ -75,39 +67,44 @@ const TagCells = ({ session }: { session: SessionInterface }) => {
               <TableCell>{tag.slug}</TableCell>
               <TableCell>{tag._count.post}</TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      className="focus-visible:outline-none"
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <MoreHorizontalIcon className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[200px]">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <TagForm
-                          type="edit"
-                          data={tag}
-                          token={session.user.token}
-                        />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          tagDeleteMutation.mutate(tag.id);
-                        }}
-                        className="text-red-600"
-                      >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <TagForm
+                  type="edit"
+                  tag={tag}
+                  token={session.user.token}
+                  render={(setOpen) => {
+                    return (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            className="focus-visible:outline-none"
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <MoreHorizontalIcon className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px]">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setOpen(true)}>
+                              <EditIcon className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                tagDeleteMutation.mutate(tag.id);
+                              }}
+                              className="text-red-600"
+                            >
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  }}
+                />
               </TableCell>
             </TableRow>
           ))

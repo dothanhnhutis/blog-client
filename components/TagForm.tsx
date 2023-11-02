@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import slug from "slugify";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,59 +7,62 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { cn, http } from "@/lib/utils";
-import { EditIcon, LockIcon, UnlockIcon } from "lucide-react";
+import { cn, generateSlug, http } from "@/lib/utils";
+import { LockIcon, UnlockIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { create } from "domain";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
 import { useToast } from "./ui/use-toast";
-import { ToastAction } from "./ui/toast";
+import { isAxiosError } from "axios";
 
 const TagForm = ({
   type,
   token,
-  data,
+  tag,
+  render,
 }: {
+  render: (
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  ) => JSX.Element;
   type: "create" | "edit";
-
-  data?: {
+  tag?: {
+    id: string;
     name: string;
     slug: string;
   };
   token: string;
 }) => {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<boolean>(false);
   const [editable, setEditable] = React.useState(false);
+  const [errorSlug, setErrorSlug] = React.useState(false);
 
   const [form, setForm] = React.useState<{
     name: string;
     slug: string;
-  }>(
-    () =>
-      data ?? {
-        name: "",
-        slug: "",
-      }
+  }>(() =>
+    type === "create"
+      ? {
+          name: "",
+          slug: "",
+        }
+      : tag ?? {
+          name: "",
+          slug: "",
+        }
   );
+
+  React.useEffect(() => {
+    setErrorSlug(false);
+  }, [form]);
 
   React.useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      slug: slug(prev.name, { lower: true, locale: "vi" }),
+      slug: generateSlug(prev.name),
     }));
   }, [form.name]);
 
@@ -73,12 +75,50 @@ const TagForm = ({
       });
       return dataRes;
     },
+    onError() {
+      setErrorSlug(true);
+      toast({
+        description: "😟 Slug has been used",
+      });
+    },
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["tags"], exact: true });
       setOpen(false);
       setForm({
         name: "",
         slug: "",
+      });
+      toast({
+        description: "🥳 Create tag success",
+      });
+    },
+  });
+
+  const tagUpdateMutation = useMutation({
+    mutationFn: async (data: { name: string; slug: string }) => {
+      const { data: dataRes } = await http.patch("/tags/" + tag?.id, data, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      return dataRes;
+    },
+    onError(error) {
+      console.log(isAxiosError(error) && error.response?.data);
+      setErrorSlug(true);
+      toast({
+        description: "😟 Slug has been used",
+      });
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["tags"], exact: true });
+      setOpen(false);
+      setForm({
+        name: "",
+        slug: "",
+      });
+      toast({
+        description: "🥳 Edit tag success",
       });
     },
   });
@@ -89,43 +129,16 @@ const TagForm = ({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    tagCreateMutation.mutate(form);
+    if (type === "create") {
+      tagCreateMutation.mutate({ name: form.name, slug: form.slug });
+    } else {
+      tagUpdateMutation.mutate({ name: form.name, slug: form.slug });
+    }
   };
-
-  const { toast } = useToast();
 
   return (
     <AlertDialog open={open}>
-      {/* <AlertDialogTrigger
-        onClick={() => {
-          // setOpen(true);
-          toast({
-            title: "Scheduled: Catch up ",
-            description: "Friday, February 10, 2023 at 5:57 PM",
-            action: (
-              <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
-            ),
-          });
-        }}
-        asChild
-      > */}
-      {type === "create" ? (
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            setOpen(true);
-          }}
-        >
-          +
-        </Button>
-      ) : (
-        <Button type="button" variant="secondary">
-          <EditIcon className="mr-2 h-4 w-4" /> Edit
-        </Button>
-      )}
-      {/* </AlertDialogTrigger> */}
+      {render(setOpen)}
       <AlertDialogContent>
         <form onSubmit={handleSubmit}>
           <AlertDialogHeader>
@@ -153,7 +166,10 @@ const TagForm = ({
                   name="slug"
                   value={form.slug}
                   onChange={handleOnchange}
-                  className={cn("focus-visible:ring-transparent")}
+                  className={cn(
+                    "focus-visible:ring-transparent",
+                    errorSlug ? "border-red-400" : ""
+                  )}
                   placeholder="Slug"
                 />
                 <Button
@@ -177,9 +193,14 @@ const TagForm = ({
             </AlertDialogCancel>
             <AlertDialogAction
               type="submit"
-              disabled={form.name.length === 0 || form.slug.length === 0}
+              disabled={
+                form.name.length === 0 ||
+                form.slug.length === 0 ||
+                (type === "edit" && form.name === tag?.name) ||
+                form.slug === tag?.slug
+              }
             >
-              Create
+              {type === "create" ? "Create" : "Save"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </form>

@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Tiptap from "./Tiptap";
 import StarterKit from "@tiptap/starter-kit";
-import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -85,7 +84,6 @@ const PostForm = () => {
       TextAlign.configure({
         types: ["heading", "paragraph", "image"],
       }),
-      Highlight,
       Underline,
       Link.configure({
         protocols: ["ftp", "mailto"],

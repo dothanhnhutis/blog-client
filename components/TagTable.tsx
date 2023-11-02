@@ -5,7 +5,6 @@ import {
   Table,
   TableBody,
   TableCaption,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -26,7 +25,22 @@ const TagTable = ({ session }: { session: SessionInterface }) => {
           className="max-w-[400px]"
           placeholder="Filter tag name..."
         />
-        <TagForm type="create" token={session.user.token} />
+
+        <TagForm
+          type="create"
+          token={session.user.token}
+          render={(setOpen) => {
+            return (
+              <Button
+                onClick={() => setOpen(true)}
+                type="button"
+                variant="secondary"
+              >
+                +
+              </Button>
+            );
+          }}
+        />
       </div>
       <div className="rounded-md border p-0">
         <Table>
@@ -34,10 +48,10 @@ const TagTable = ({ session }: { session: SessionInterface }) => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Tag name</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Post</TableHead>
-              <TableHead></TableHead>
+              <TableHead>NAME</TableHead>
+              <TableHead>SLUG</TableHead>
+              <TableHead>POST</TableHead>
+              <TableHead>ACTION</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

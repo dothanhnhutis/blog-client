@@ -1,9 +1,14 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import axios, { AxiosError, AxiosInstance } from "axios";
+import slugify from "slugify";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const generateSlug = (name: string) => {
+  return slugify(name, { lower: true, locale: "vi" });
+};
 
 class Http {
   instance: AxiosInstance;

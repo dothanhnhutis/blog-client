@@ -38,14 +38,14 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    GitbubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID!,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    // }),
+    // GitbubProvider({
+    //   clientId: process.env.GITHUB_CLIENT_ID!,
+    //   clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    // }),
   ],
   jwt: {
     encode: ({ secret, token }) => {
@@ -97,6 +97,10 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account, profile }) {
+      console.log(token);
+      console.log(user);
+      console.log(account);
+      console.log(profile);
       return {
         ...token,
         ...user,

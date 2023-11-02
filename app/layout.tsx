@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TankStackProvider } from "@/components/TankStackProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,6 +27,7 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </TankStackProvider>
+        <Toaster />
       </body>
     </html>
   );

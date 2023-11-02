@@ -77,9 +77,9 @@ export interface SessionInterface extends Session {
     id: string;
     email: string;
     role: string;
-    userPreference: {
-      username: string;
-      avatarUrl: string;
-    };
+    name: string;
+    image: string;
+    status: string;
+    token: string;
   };
 }

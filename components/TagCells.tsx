@@ -65,7 +65,7 @@ const TagCells = ({ session }: { session: SessionInterface }) => {
               <TableCell>{tag.id}</TableCell>
               <TableCell>{tag.name}</TableCell>
               <TableCell>{tag.slug}</TableCell>
-              <TableCell>{tag._count.post}</TableCell>
+              <TableCell className="text-center">{tag._count.post}</TableCell>
               <TableCell>
                 <TagForm
                   type="edit"

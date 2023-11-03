@@ -27,6 +27,7 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </TankStackProvider>
+
         <Toaster />
       </body>
     </html>

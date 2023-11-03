@@ -2,7 +2,7 @@ import React from "react";
 import MediaChatImage from "@/images/mediachat.png";
 import Image from "next/image";
 import { getServerAuthSession } from "@/lib/auth";
-import TagContainer from "@/components/TagContainer";
+import DataTableWrapper from "./data-table-wrapper";
 
 const TableTemp = async () => {
   const session = await getServerAuthSession();
@@ -15,7 +15,8 @@ const TableTemp = async () => {
           <Image priority src={MediaChatImage} alt="mediachat" />
         </div>
       </div>
-      <TagContainer session={session} />
+
+      <DataTableWrapper session={session} />
     </>
   );
 };

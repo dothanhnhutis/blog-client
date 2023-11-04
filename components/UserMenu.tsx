@@ -21,9 +21,7 @@ const UserMenu = ({ session }: { session?: SessionInterface }) => {
     <DropdownMenu>
       <DropdownMenuTrigger className="outline-none">
         <Avatar>
-          <AvatarImage
-            src={session?.user?.userPreference?.avatarUrl ?? AvatarDefault.src}
-          />
+          <AvatarImage src={session?.user?.image ?? AvatarDefault.src} />
           <AvatarFallback className="bg-transparent">
             <Skeleton className="h-10 w-10 rounded-full" />
           </AvatarFallback>
@@ -32,18 +30,14 @@ const UserMenu = ({ session }: { session?: SessionInterface }) => {
       <DropdownMenuContent align="end" className="max-w-[360px]">
         <DropdownMenuLabel className="flex items-center gap-3">
           <Avatar className="w-24 h-24">
-            <AvatarImage
-              src={
-                session?.user?.userPreference?.avatarUrl ?? AvatarDefault.src
-              }
-            />
+            <AvatarImage src={session?.user?.image ?? AvatarDefault.src} />
             <AvatarFallback className="bg-transparent">
               <Skeleton className="w-24 h-24 rounded-full" />
             </AvatarFallback>
           </Avatar>
           <div className="w-full overflow-hidden">
             <p className="font-medium text-lg">
-              {session?.user?.userPreference?.username ?? "error"}
+              {session?.user?.name ?? "error"}
             </p>
             <p className="font-light text-sm text-gray-500">
               {`${session?.user?.role ?? "error"}`}

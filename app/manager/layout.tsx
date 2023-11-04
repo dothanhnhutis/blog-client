@@ -44,11 +44,7 @@ const ManagerLayout = async ({ children }: { children: React.ReactNode }) => {
       </header>
       <div className="flex h-[calc(100vh_-_73px)]">
         <SideBar />
-        <div className="flex-auto overflow-scroll">
-          <div className="xl:max-w-7xl xl:mx-auto px-6 pb-16 pt-3">
-            {children}
-          </div>
-        </div>
+        <div className="flex-auto overflow-y-scroll h-full">{children}</div>
       </div>
     </div>
   );
